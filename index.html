@@ -1,10 +1,79 @@
+Skip to content
+fantasposi-calvasito
+fantasposi-calvasito
+Repository navigation
+Code
+Issues
+1
+ (1)
+Pull requests
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Commit 60ed548
+fantasposi-calvasito
+fantasposi-calvasito
+authored
+1 hour ago
+·
+·
+Verified
+Update index.html
+main
+1 parent 
+b49c727
+ commit 
+60ed548
+1 file changed
 
++237
+-36
+Lines changed: 237 additions & 36 deletions
+File tree
+Filter files…
+index.html
+Search within code
+ 
+‎index.html‎
++237
+-36
+Lines changed: 237 additions & 36 deletions
+Original file line number	Diff line number	Diff line change
+@@ -3,50 +3,251 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fantasposi del Calvasito</title>
 <style>
+body {
+  margin: 0;
+  background: linear-gradient(135deg,#10192d,#35466c);
+  color: #f8e6b8;
+  font-family: Georgia,serif;
+  text-align: center;
+}
+main {max-width: 650px; margin: auto; padding: 60px 20px;}
+h1 {font-size: 42px; color: #f7d58c;}
+.card {
+  border: 1px solid #d5b46f;
+  background: #1d2b46;
+  padding: 30px;
+  border-radius: 18px;
+  margin-top: 35px;
+}
+button {
+  background: #d5b46f;
+  color: #17233d;
+  border: 0;
+  border-radius: 10px;
+  padding: 15px 25px;
+  font-size: 17px;
+}
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(145deg,#11182b,#344368);color:#f8e9c9;font:16px Arial,sans-serif}
 header,main{max-width:850px;margin:auto;padding:20px}
@@ -35,9 +104,13 @@ footer{text-align:center;padding:30px}
 </style>
 </head>
 <body>
+<main>
 <div id="status">Connessione al torneo...</div>
 <header>
 <p>ALESSIO & MARIA · 12.12.2026</p>
+<h1>⚡ FANTASPOSI ⚡</h1>
+<h2>DEL CALVASITO</h2>
+<p>La Coppa dei Tre Maghi</p>
 <h1>⚡ FANTASPOSI ⚡<br>DEL CALVASITO</h1>
 <p>🏆 La Coppa dei Tre Maghi 🏆</p>
 </header>
@@ -54,33 +127,36 @@ footer{text-align:center;padding:30px}
 <button id="join">✨ Entra nel torneo</button>
 </form>
 </section>
-
 <section id="game" class="hidden">
 <div class="card">
+<h2>🏰 Benvenuti al torneo!</h2>
+<p>Casa A contro Casa M</p>
+<p>Preparate le bacchette: la magia sta per iniziare.</p>
+<button onclick="alert('Il torneo sta per cominciare!')">
+Entra nel torneo
+</button>
 <h2 id="welcome"></h2>
 <p id="identity"></p>
 <h3 id="myPoints">0 punti</h3>
 </div>
+<p>✨ Fatto il misfatto ✨</p>
 <nav class="tabs">
 <button data-tab="ranking" class="active">🏆 Classifica</button>
 <button data-tab="rules">📜 Regole</button>
 <button data-tab="report">✨ Segnala</button>
 <button data-tab="votes">🪄 Conferma</button>
 </nav>
-
 <section id="ranking" class="card">
 <h2>Classifica individuale</h2>
 <div id="rankList"></div>
 <h2>Coppa delle casate</h2>
 <div id="houseRank"></div>
 </section>
-
 <section id="rules" class="card hidden">
 <h2>Bonus e malus</h2>
 <p class="muted">Regolamento provvisorio</p>
 <div id="rulesList"></div>
 </section>
-
 <section id="report" class="card hidden">
 <h2>Nuova segnalazione</h2>
 <p>Servono due testimoni diversi entro 30 minuti.</p>
@@ -92,18 +168,15 @@ footer{text-align:center;padding:30px}
 <button>Invia segnalazione</button>
 </form>
 </section>
-
 <section id="votes" class="card hidden">
 <h2>Segnalazioni in attesa</h2>
 <p class="muted">Conferma soltanto ciò che hai visto.</p>
 <div id="voteList"></div>
 </section>
-
 <button id="refresh">↻ Aggiorna il gioco</button>
 </section>
 </main>
 <footer>✨ Fatto il misfatto ✨</footer>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const db=window.supabase.createClient(
@@ -137,13 +210,8 @@ const a=await db.auth.signInAnonymously();
 if(a.error)throw a.error;
 }
 [houses,tables,rules]=await Promise.all([
-get('casate'),get('tavoli'),
-db.from('regole').select('*').eq('attiva',true).then(
-  ({data,error})=>{
-    if(error)throw error;
-    return data||[];
-  }
-)]);
+get('casate'),get('tavoli'),get('regole')
+]);
 opts('table',tables,x=>x.nome);
 $('houses').innerHTML=houses.map(h=>
 `<label><input type="radio" name="house" value="${h.id}" required> <strong>${safe(h.nome)}</strong><br><small>${safe(h.motto)}</small></label>`
@@ -169,22 +237,15 @@ await refresh();
 async function refresh(){
 if(!me)return;
 try{
-const [ranks,all,reports,votes,houseScores]=await Promise.all([([
+const [ranks,all,reports,votes]=await Promise.all([
 get('classifica_giocatori'),get('giocatori'),
-get('segnalazioni'),get('testimonianze'),
-get('classifica_casate')
+get('segnalazioni'),get('testimonianze')
+]);
 players=all;
 ranks.sort((a,b)=>Number(b.punti)-Number(a.punti));
-
-$('houseRank').innerHTML=houseScores
-  .sort((a,b)=>Number(b.punti)-Number(a.punti))
-  .map(h=>`
-    <div class="item row">
-      <strong>🏰 ${safe(h.nome)}</strong>
-      <strong>${h.punti} pt</strong>
-    </div>
-  `).join('');
-;
+$('rankList').innerHTML=ranks.map((p,i)=>
+`<div class="item row"><span>${i+1}. ${safe(p.nome)}<br><small>${safe(house(p.casata_id))} · ${safe(table(p.tavolo_id))}</small></span><strong>${p.punti} pt</strong></div>`
+).join('');
 $('myPoints').textContent=(ranks.find(p=>p.id===me.id)?.punti||0)+' punti';
 $('houseRank').innerHTML=houses.map(h=>({
 nome:h.nome,punti:ranks.filter(p=>p.casata_id===h.id)
@@ -192,22 +253,9 @@ nome:h.nome,punti:ranks.filter(p=>p.casata_id===h.id)
 })).sort((a,b)=>b.punti-a.punti).map(h=>
 `<div class="item row"><strong>${safe(h.nome)}</strong><strong>${h.punti} pt</strong></div>`
 ).join('');
-
-$('rulesList').innerHTML=rules.map(r=>`
-<div class="item">
-  <div class="row">
-    <strong>${safe(r.nome)}</strong>
-    <strong class="${r.punti>0?'good':'bad'}">
-      ${r.punti>0?'+':''}${r.punti} pt
-    </strong>
-  </div>
-  <p class="muted">${safe(r.descrizione)}</p>
-  ${r.destinatario_punti==='casata'
-    ? '<small>🏰 Premio alla casata</small>'
-    : ''}
-</div>
-`).join('');
-
+$('rulesList').innerHTML=rules.map(r=>
+`<div class="item row"><span>${safe(r.nome)}</span><strong class="${r.punti>0?'good':'bad'}">${r.punti>0?'+':''}${r.punti}</strong></div>`
+).join('');
 opts('target',players.filter(p=>p.id!==me.id),
 p=>p.nome+' · '+table(p.tavolo_id));
 opts('rule',rules,r=>r.punti+' · '+r.nome);
@@ -275,3 +323,10 @@ init();
 </script>
 </body>
 </html>
+0 commit comments
+Comments
+0
+ (0)
+Comment
+You're not receiving notifications from this thread.
+
