@@ -3,50 +3,251 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fantasposi del Calvasito</title>
 <style>
-body {
-  margin: 0;
-  background: linear-gradient(135deg,#10192d,#35466c);
-  color: #f8e6b8;
-  font-family: Georgia,serif;
-  text-align: center;
-}
-main {max-width: 650px; margin: auto; padding: 60px 20px;}
-h1 {font-size: 42px; color: #f7d58c;}
-.card {
-  border: 1px solid #d5b46f;
-  background: #1d2b46;
-  padding: 30px;
-  border-radius: 18px;
-  margin-top: 35px;
-}
-button {
-  background: #d5b46f;
-  color: #17233d;
-  border: 0;
-  border-radius: 10px;
-  padding: 15px 25px;
-  font-size: 17px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,#11182b,#344368);color:#f8e9c9;font:16px Arial,sans-serif}
+header,main{max-width:850px;margin:auto;padding:20px}
+header{text-align:center;padding-top:35px}
+h1,h2{font-family:Georgia,serif;color:#f4d38b}
+h1{font-size:clamp(30px,7vw,48px)}
+.card{background:#1b2540;border:1px solid #a78d57;border-radius:16px;padding:20px;margin:16px 0}
+input,select,button{width:100%;padding:13px;margin:7px 0;border-radius:9px;font:inherit}
+input,select{background:#10192e;color:white;border:1px solid #999}
+button{background:#dcb96c;color:#17223b;border:0;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.5}
+.hidden{display:none}
+.muted{color:#c9c5ba;font-size:14px}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.item{padding:13px 0;border-bottom:1px solid #5c6073}
+.tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.tabs button{background:#35476c;color:white}
+.tabs button.active{background:#dcb96c;color:#17223b}
+.houses{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.houses label{padding:18px;border-radius:12px;text-align:center;display:block}
+.houses label:first-child{background:#153a65}
+.houses label:last-child{background:#702b32}
+.houses input{width:auto}
+.good{color:#a5edb5}
+.bad{color:#ffb2b2}
+#status{text-align:center;padding:12px;background:#11182b;position:sticky;top:0}
+footer{text-align:center;padding:30px}
 </style>
 </head>
 <body>
-<main>
+<div id="status">Connessione al torneo...</div>
+<header>
 <p>ALESSIO & MARIA · 12.12.2026</p>
-<h1>⚡ FANTASPOSI ⚡</h1>
-<h2>DEL CALVASITO</h2>
-<p>La Coppa dei Tre Maghi</p>
+<h1>⚡ FANTASPOSI ⚡<br>DEL CALVASITO</h1>
+<p>🏆 La Coppa dei Tre Maghi 🏆</p>
+</header>
+<main>
+<section id="register" class="card hidden">
+<h2>🏰 Entra nel torneo</h2>
+<form id="registration">
+<label>Nome e cognome</label>
+<input id="name" required minlength="2" maxlength="60">
+<label>Il tuo tavolo</label>
+<select id="table" required></select>
+<h3>Scegli la tua casata</h3>
+<div id="houses" class="houses"></div>
+<button id="join">✨ Entra nel torneo</button>
+</form>
+</section>
+
+<section id="game" class="hidden">
 <div class="card">
-<h2>🏰 Benvenuti al torneo!</h2>
-<p>Casa A contro Casa M</p>
-<p>Preparate le bacchette: la magia sta per iniziare.</p>
-<button onclick="alert('Il torneo sta per cominciare!')">
-Entra nel torneo
-</button>
+<h2 id="welcome"></h2>
+<p id="identity"></p>
+<h3 id="myPoints">0 punti</h3>
 </div>
-<p>✨ Fatto il misfatto ✨</p>
+<nav class="tabs">
+<button data-tab="ranking" class="active">🏆 Classifica</button>
+<button data-tab="rules">📜 Regole</button>
+<button data-tab="report">✨ Segnala</button>
+<button data-tab="votes">🪄 Conferma</button>
+</nav>
+
+<section id="ranking" class="card">
+<h2>Classifica individuale</h2>
+<div id="rankList"></div>
+<h2>Coppa delle casate</h2>
+<div id="houseRank"></div>
+</section>
+
+<section id="rules" class="card hidden">
+<h2>Bonus e malus</h2>
+<p class="muted">Regolamento provvisorio</p>
+<div id="rulesList"></div>
+</section>
+
+<section id="report" class="card hidden">
+<h2>Nuova segnalazione</h2>
+<p>Servono due testimoni diversi entro 30 minuti.</p>
+<form id="reportForm">
+<label>Giocatore</label>
+<select id="target" required></select>
+<label>Bonus o malus</label>
+<select id="rule" required></select>
+<button>Invia segnalazione</button>
+</form>
+</section>
+
+<section id="votes" class="card hidden">
+<h2>Segnalazioni in attesa</h2>
+<p class="muted">Conferma soltanto ciò che hai visto.</p>
+<div id="voteList"></div>
+</section>
+
+<button id="refresh">↻ Aggiorna il gioco</button>
+</section>
 </main>
+<footer>✨ Fatto il misfatto ✨</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const db=window.supabase.createClient(
+'https://hiwcjxolotqyezgdzjhh.supabase.co',
+'sb_publishable_bXP2omNwJaIDVnwHwPKDlA_Hcsc4IGV'
+);
+const $=id=>document.getElementById(id);
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({
+'&':'&amp;','<':'&lt;','>':'&gt;',
+'"':'&quot;',"'":'&#39;'
+}[c]));
+let me=null,players=[],houses=[],tables=[],rules=[];
+function msg(s){$('status').textContent=s}
+function opts(id,items,fn){
+$(id).innerHTML='<option value="">Seleziona...</option>'+
+items.map(x=>`<option value="${x.id}">${safe(fn(x))}</option>`).join('');
+}
+function house(id){return houses.find(x=>x.id===id)?.nome||''}
+function table(id){return tables.find(x=>x.id===id)?.nome||''}
+async function get(name){
+const {data,error}=await db.from(name).select('*');
+if(error)throw error;
+return data||[];
+}
+async function init(){
+try{
+let {data:{session},error}=await db.auth.getSession();
+if(error)throw error;
+if(!session){
+const a=await db.auth.signInAnonymously();
+if(a.error)throw a.error;
+}
+[houses,tables,rules]=await Promise.all([
+get('casate'),get('tavoli'),get('regole')
+]);
+opts('table',tables,x=>x.nome);
+$('houses').innerHTML=houses.map(h=>
+`<label><input type="radio" name="house" value="${h.id}" required> <strong>${safe(h.nome)}</strong><br><small>${safe(h.motto)}</small></label>`
+).join('');
+const {data:{user},error:userError}=await db.auth.getUser();
+if(userError)throw userError;
+const {data,error:profileError}=await db.from('giocatori')
+.select('*').eq('auth_user_id',user.id).maybeSingle();
+if(profileError)throw profileError;
+me=data;
+await render();
+msg('✨ Connesso al torneo');
+}catch(e){msg('Errore: '+e.message);console.error(e)}
+}
+async function render(){
+$('register').classList.toggle('hidden',!!me);
+$('game').classList.toggle('hidden',!me);
+if(!me)return;
+$('welcome').textContent='Ciao, '+me.nome+'!';
+$('identity').textContent=table(me.tavolo_id)+' · '+house(me.casata_id);
+await refresh();
+}
+async function refresh(){
+if(!me)return;
+try{
+const [ranks,all,reports,votes]=await Promise.all([
+get('classifica_giocatori'),get('giocatori'),
+get('segnalazioni'),get('testimonianze')
+]);
+players=all;
+ranks.sort((a,b)=>Number(b.punti)-Number(a.punti));
+$('rankList').innerHTML=ranks.map((p,i)=>
+`<div class="item row"><span>${i+1}. ${safe(p.nome)}<br><small>${safe(house(p.casata_id))} · ${safe(table(p.tavolo_id))}</small></span><strong>${p.punti} pt</strong></div>`
+).join('');
+$('myPoints').textContent=(ranks.find(p=>p.id===me.id)?.punti||0)+' punti';
+$('houseRank').innerHTML=houses.map(h=>({
+nome:h.nome,punti:ranks.filter(p=>p.casata_id===h.id)
+.reduce((s,p)=>s+Number(p.punti),0)
+})).sort((a,b)=>b.punti-a.punti).map(h=>
+`<div class="item row"><strong>${safe(h.nome)}</strong><strong>${h.punti} pt</strong></div>`
+).join('');
+$('rulesList').innerHTML=rules.map(r=>
+`<div class="item row"><span>${safe(r.nome)}</span><strong class="${r.punti>0?'good':'bad'}">${r.punti>0?'+':''}${r.punti}</strong></div>`
+).join('');
+opts('target',players.filter(p=>p.id!==me.id),
+p=>p.nome+' · '+table(p.tavolo_id));
+opts('rule',rules,r=>r.punti+' · '+r.nome);
+const open=reports.filter(r=>r.stato==='in_attesa'&&
+new Date(r.scade_il).getTime()>Date.now());
+$('voteList').innerHTML=open.map(r=>{
+const count=votes.filter(v=>v.segnalazione_id===r.id).length;
+const target=players.find(p=>p.id===r.destinatario_id);
+const rule=rules.find(x=>x.id===r.regola_id);
+const already=votes.some(v=>v.segnalazione_id===r.id&&v.testimone_id===me.id);
+const canVote=!already&&r.segnalatore_id!==me.id&&r.destinatario_id!==me.id;
+return `<div class="item"><strong>${safe(target?.nome)}</strong> — ${safe(rule?.nome)}<p>${count}/2 conferme</p>${canVote?`<button data-confirm="${r.id}">Confermo</button>`:'Non puoi confermare'}</div>`;
+}).join('')||'Nessuna segnalazione in attesa.';
+msg('✨ Dati aggiornati');
+}catch(e){msg('Errore: '+e.message);console.error(e)}
+}
+$('registration').onsubmit=async e=>{
+e.preventDefault();
+$('join').disabled=true;
+try{
+const selected=document.querySelector('input[name="house"]:checked');
+if(!selected)throw Error('Scegli una casata');
+const {data,error}=await db.rpc('registra_giocatore',{
+p_nome:$('name').value.trim(),
+p_tavolo_id:Number($('table').value),
+p_casata_id:Number(selected.value)
+});
+if(error)throw error;
+const result=await db.from('giocatori').select('*').eq('id',data).single();
+if(result.error)throw result.error;
+me=result.data;
+await render();
+}catch(e){msg('Errore: '+e.message)}
+finally{$('join').disabled=false}
+};
+$('reportForm').onsubmit=async e=>{
+e.preventDefault();
+const {error}=await db.rpc('crea_segnalazione',{
+p_destinatario_id:$('target').value,
+p_regola_id:Number($('rule').value)
+});
+if(error)msg('Errore: '+error.message);
+else{await refresh();msg('Segnalazione inviata!')}
+};
+$('voteList').onclick=async e=>{
+const b=e.target.closest('[data-confirm]');
+if(!b)return;
+b.disabled=true;
+const {data,error}=await db.rpc('conferma_segnalazione',{
+p_segnalazione_id:b.dataset.confirm
+});
+await refresh();
+msg(error?'Errore: '+error.message:data);
+};
+document.querySelectorAll('[data-tab]').forEach(b=>{
+b.onclick=()=>{
+document.querySelectorAll('[data-tab]').forEach(x=>
+x.classList.toggle('active',x===b));
+['ranking','rules','report','votes'].forEach(id=>
+$(id).classList.toggle('hidden',id!==b.dataset.tab));
+};
+});
+$('refresh').onclick=refresh;
+init();
+</script>
 </body>
 </html>
