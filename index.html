@@ -33,9 +33,28 @@ button:disabled{opacity:.5}
 .bad{color:#ffb2b2}
 #status{text-align:center;padding:12px;background:#11182b;position:sticky;top:0}
 footer{text-align:center;padding:30px}
+
+.fantasposi-cover {
+  max-width: 850px;
+  margin: 20px auto;
+  border: 3px solid #c5a05c;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.fantasposi-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 </style>
 </head>
 <body>
+
+<div class="fantasposi-cover">
+  <img src="copertina-fantasposi.png"
+       alt="Fantasposi - Casa A contro Casa M">
+</div>
 <div id="status">Connessione al torneo...</div>
 <header>
 <p>ALESSIO & MARIA · 12.12.2026</p>
@@ -78,7 +97,7 @@ footer{text-align:center;padding:30px}
 
 <section id="rules" class="card hidden">
 <h2>Bonus e malus</h2>
-<p class="muted">Regolamento provvisorio</p>
+<p class="muted">Il regolamento ufficiale della Coppa dei Tre Maghi</p>
 <div id="rulesList"></div>
 </section>
 
@@ -181,9 +200,21 @@ nome:h.nome,punti:ranks.filter(p=>p.casata_id===h.id)
 })).sort((a,b)=>b.punti-a.punti).map(h=>
 `<div class="item row"><strong>${safe(h.nome)}</strong><strong>${h.punti} pt</strong></div>`
 ).join('');
-$('rulesList').innerHTML=rules.map(r=>
-`<div class="item row"><span>${safe(r.nome)}</span><strong class="${r.punti>0?'good':'bad'}">${r.punti>0?'+':''}${r.punti}</strong></div>`
-).join('');
+
+$('rulesList').innerHTML = rules.map(r => `
+  <div class="item">
+    <div class="row">
+      <strong>${safe(r.nome)}</strong>
+      <strong class="${r.punti > 0 ? 'good' : 'bad'}">
+        ${r.punti > 0 ? '+' : ''}${r.punti} pt
+      </strong>
+    </div>
+    <p class="muted">${safe(r.descrizione || '')}</p>
+    ${r.destinatario_punti === 'casata'
+      ? '<small>🏰 Premio alla casata</small>'
+      : ''}
+  </div>
+`).join('');
 opts('target',players.filter(p=>p.id!==me.id),
 p=>p.nome+' · '+table(p.tavolo_id));
 opts('rule',rules,r=>r.punti+' · '+r.nome);
