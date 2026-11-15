@@ -109,6 +109,7 @@ footer{text-align:center;padding:30px}
 <select id="target" required></select>
 <label>Bonus o malus</label>
 <select id="rule" required></select>
+<p id="ruleDescription" class="muted"></p>
 <button>Invia segnalazione</button>
 </form>
 </section>
@@ -217,7 +218,27 @@ $('rulesList').innerHTML = rules.map(r => `
 `).join('');
 opts('target',players.filter(p=>p.id!==me.id),
 p=>p.nome+' · '+table(p.tavolo_id));
+  const mostraDescrizioneRegola = () => {
+  const id = $('rule').value;
+  const regola = rules.find(r => String(r.id) === String(id));
+  $('ruleDescription').textContent = regola
+    ? (regola.descrizione || 'Nessuna descrizione disponibile.')
+    : '';
+};
+$('rule').addEventListener('change', mostraDescrizioneRegola);
+mostraDescrizioneRegola();
+
 opts('rule',rules,r=>r.punti+' · '+r.nome);
+  const mostraDescrizioneRegola = () => {
+  const id = $('rule').value;
+  const regola = rules.find(r => String(r.id) === String(id));
+  $('ruleDescription').textContent = regola
+    ? (regola.descrizione || 'Nessuna descrizione disponibile.')
+    : '';
+};
+$('rule').addEventListener('change', mostraDescrizioneRegola);
+mostraDescrizioneRegola();
+
 const open=reports.filter(r=>r.stato==='in_attesa'&&
 new Date(r.scade_il).getTime()>Date.now());
 $('voteList').innerHTML=open.map(r=>{
