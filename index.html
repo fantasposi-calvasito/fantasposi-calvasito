@@ -218,15 +218,7 @@ $('rulesList').innerHTML = rules.map(r => `
 `).join('');
 opts('target',players.filter(p=>p.id!==me.id),
 p=>p.nome+' · '+table(p.tavolo_id));
-  const mostraDescrizioneRegola = () => {
-  const id = $('rule').value;
-  const regola = rules.find(r => String(r.id) === String(id));
-  $('ruleDescription').textContent = regola
-    ? (regola.descrizione || 'Nessuna descrizione disponibile.')
-    : '';
-};
-$('rule').addEventListener('change', mostraDescrizioneRegola);
-mostraDescrizioneRegola();
+  
 
 opts('rule',rules,r=>r.punti+' · '+r.nome);
   const mostraDescrizioneRegola = () => {
